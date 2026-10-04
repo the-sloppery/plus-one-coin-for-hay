@@ -1,0 +1,11 @@
+.env
+.env.*
+!.env.example
+build/
+outputs/
+previews/
+sourcemap.json
+Packages/
+ServerPackages/
+.DS_Store
+.agents/

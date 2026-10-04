@@ -1,0 +1,42 @@
+name: Verify and build
+on:
+  push:
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: CompeyDev/setup-rokit@v0.1.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Formatting
+        run: stylua --check src tests tools
+      - name: Lint
+        run: selene src
+      - name: Pure logic and service fixtures
+        run: |
+          lune run tests/run.luau | tee logic.log
+          grep -F 'RESULT 45 passed, 0 failed' logic.log
+      - name: Integrated server scenarios
+        run: |
+          lune run tests/integration.luau | tee server.log
+          grep -F 'RESULT 15 integrated server scenarios passed' server.log
+      - name: Production UI scenarios
+        run: |
+          lune run tests/ui.luau | tee ui.log
+          grep -F 'RESULT 8 UI scenarios passed' ui.log
+      - name: Roblox type analysis
+        run: |
+          mkdir -p build
+          rojo sourcemap default.project.json --output sourcemap.json
+          curl --fail --location https://raw.githubusercontent.com/JohnnyMorganz/luau-lsp/1.68.1/scripts/globalTypes.d.luau --output build/roblox.d.luau
+          luau-lsp analyze --platform roblox --sourcemap sourcemap.json --definitions @roblox=build/roblox.d.luau src
+      - name: Build Studio place
+        run: rojo build default.project.json -o build/plus-one-coin-for-hay.rbxlx
+      - uses: actions/upload-artifact@v4
+        with:
+          name: haystack-${{ github.sha }}
+          path: build/plus-one-coin-for-hay.rbxlx
