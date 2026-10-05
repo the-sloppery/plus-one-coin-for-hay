@@ -1,0 +1,25 @@
+name: Engineering task
+description: Track a bounded implementation or maintenance task
+title: "[Task] "
+body:
+  - type: input
+    id: owner
+    attributes:
+      label: Owner
+      description: Agent or human owner and coordination reference.
+    validations:
+      required: true
+  - type: textarea
+    id: change
+    attributes:
+      label: Change
+      description: State the exact files, systems, and behavior to change.
+    validations:
+      required: true
+  - type: textarea
+    id: checks
+    attributes:
+      label: Checks and evidence
+      description: Name the focused checks, exact source head, and remaining unknowns.
+    validations:
+      required: true

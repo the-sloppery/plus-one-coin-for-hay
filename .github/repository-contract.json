@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "organization": "the-sloppery",
+  "repository": "plus-one-coin-for-hay",
+  "class": "game",
+  "agent_context": {
+    "repository": "the-sloppery/sloppery-dev",
+    "source": "templates/AGENT_CONTEXT.md",
+    "local_path": "docs/AGENT_CONTEXT.md",
+    "url": "https://github.com/the-sloppery/sloppery-dev/blob/main/templates/AGENT_CONTEXT.md"
+  },
+  "iac": {
+    "repository": "the-sloppery/iac-sloppery",
+    "catalog_path": "catalog/repositories.json",
+    "url": "https://github.com/the-sloppery/iac-sloppery/blob/dev/catalog/repositories.json"
+  },
+  "templates": {
+    "source_repository": "the-sloppery/sloppery-dev",
+    "source_path": "templates/github",
+    "issue_path": ".github/ISSUE_TEMPLATE",
+    "pull_request_path": ".github/PULL_REQUEST_TEMPLATE.md"
+  },
+  "ci": {
+    "source_repository": "the-sloppery/sloppery-dev",
+    "source_path": "templates/ci",
+    "contract_workflow": ".github/workflows/contract.yml",
+    "workflow": "ci.yml",
+    "runner": [
+      "self-hosted",
+      "ww-linux"
+    ]
+  },
+  "canonical_source_commit": "9607f87a9d0329865a94b4321b8ce1186d94ad8d"
+}

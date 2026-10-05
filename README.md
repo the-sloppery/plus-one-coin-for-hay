@@ -40,3 +40,15 @@ Publish the same place as the experience start place and set **Max Players 24** 
 Published profiles use `HayProfiles_v1` with session leases and autosaves. Studio uses memory only. Do not enable Studio production-save access for testing. Reserved-server teleports require a published Roblox-client test. These deployment steps have not been performed by this repository.
 
 See [GAME_SPEC](docs/GAME_SPEC.md), [HANDOVER](docs/HANDOVER.md) and [VERIFICATION](docs/VERIFICATION.md).
+
+## Organization contract
+
+This repository is governed by `the-sloppery` organization contracts.
+
+- Agent context and durable handoffs: [`sloppery-dev`](https://github.com/the-sloppery/sloppery-dev), linked locally by [`docs/AGENT_CONTEXT.md`](docs/AGENT_CONTEXT.md).
+- GitHub organization IaC, repository settings, catalogs, and governance: [`iac-sloppery`](https://github.com/the-sloppery/iac-sloppery).
+- Canonical templates, issue forms, PR form, and baseline CI: [`sloppery-dev/templates`](https://github.com/the-sloppery/sloppery-dev/tree/main/templates).
+- This repository's exact ownership and CI contract: [`.github/repository-contract.json`](.github/repository-contract.json) and [`docs/REPOSITORY_CONTRACT.md`](docs/REPOSITORY_CONTRACT.md).
+
+Keep source in this repository. Do not copy credentials, private context, raw
+chat exports, local databases, or production data here.

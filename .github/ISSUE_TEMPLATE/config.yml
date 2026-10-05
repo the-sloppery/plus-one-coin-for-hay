@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Agent context and repository boundaries
+    url: https://github.com/the-sloppery/sloppery-dev/tree/main/context
+    about: Read the canonical ownership and evidence contracts before opening cross-repository work.
+  - name: Template, library, and tool catalog
+    url: https://github.com/the-sloppery/iac-sloppery/tree/dev/catalog
+    about: Find the canonical repository inventory and pinned assets.

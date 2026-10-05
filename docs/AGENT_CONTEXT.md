@@ -1,0 +1,1 @@
+../../sloppery-dev/templates/AGENT_CONTEXT.md
