@@ -16,17 +16,14 @@ jobs:
       - name: Validate organization contract
         env:
           EXPECTED_REPOSITORY: ${{ github.repository }}
+        shell: bash
         run: |
-          python - <<'PY'
-          import json, os, pathlib
-          path = pathlib.Path('.github/repository-contract.json')
-          data = json.loads(path.read_text(encoding='utf-8'))
-          if data.get('organization') != 'the-sloppery':
-              raise SystemExit('repository contract has the wrong organization')
-          if data.get('repository') != os.environ['EXPECTED_REPOSITORY'].split('/', 1)[1]:
-              raise SystemExit('repository contract does not match this repository')
-          for required in ('.github/ISSUE_TEMPLATE/config.yml', '.github/ISSUE_TEMPLATE/bug.yml', '.github/ISSUE_TEMPLATE/feature.yml', '.github/ISSUE_TEMPLATE/task.yml', '.github/PULL_REQUEST_TEMPLATE.md', 'docs/AGENT_CONTEXT.md'):
-              if not pathlib.Path(required).exists() and not pathlib.Path(required).is_symlink():
-                  raise SystemExit(f'missing required contract file: {required}')
-          print('repository contract: OK')
-          PY
+          set -euo pipefail
+          expected="${EXPECTED_REPOSITORY#*/}"
+          actual="$(jq -r '.repository' .github/repository-contract.json)"
+          [[ "$(jq -r '.organization' .github/repository-contract.json)" == "the-sloppery" ]] || { echo "wrong organization"; exit 1; }
+          [[ "$actual" == "$expected" ]] || { echo "repository contract does not match this repository"; exit 1; }
+          for required in .github/ISSUE_TEMPLATE/config.yml .github/ISSUE_TEMPLATE/bug.yml .github/ISSUE_TEMPLATE/feature.yml .github/ISSUE_TEMPLATE/task.yml .github/PULL_REQUEST_TEMPLATE.md docs/AGENT_CONTEXT.md; do
+            [[ -e "$required" || -L "$required" ]] || { echo "missing required contract file: $required"; exit 1; }
+          done
+          echo 'repository contract: OK'
