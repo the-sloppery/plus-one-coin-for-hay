@@ -10,6 +10,8 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: CompeyDev/setup-rokit@v0.1.2
+        env:
+          HOME: ${{ runner.temp }}/sloppery-rokit-${{ github.run_id }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Formatting
