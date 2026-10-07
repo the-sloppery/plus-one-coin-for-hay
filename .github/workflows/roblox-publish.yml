@@ -32,10 +32,21 @@ jobs:
       ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
 
     steps:
-      - name: Check out source and pinned assets
+      - name: Check out source
         uses: actions/checkout@v4
-        with:
-          submodules: recursive
+
+      - name: Resolve and fetch pinned asset submodule
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Some prototypes still carry a historical public URL that no
+          # longer exists. The same pinned commits are available in the
+          # organization-owned mirror.
+          if grep -q "goyim-bros-intl/lib-robots-assets.git" .gitmodules 2>/dev/null; then
+            git config -f .gitmodules submodule.vendor/lib-robots-assets.url https://github.com/the-sloppery/lib-robots-assets.git
+          fi
+          git submodule sync --recursive
+          git submodule update --init --depth 1 --recursive
 
       - name: Install pinned toolchain
         uses: CompeyDev/setup-rokit@v0.1.2
