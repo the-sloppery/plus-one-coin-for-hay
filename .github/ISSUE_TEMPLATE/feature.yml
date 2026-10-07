@@ -1,0 +1,29 @@
+name: Feature request
+description: Propose a bounded change for this repository
+title: "[Feature] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check `sloppery-dev/context/repository-boundaries.json` before proposing cross-repository work.
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem
+      description: What concrete problem needs solving?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope and owner
+      description: Which repository owns the change, and what is explicitly out of scope?
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance evidence
+      description: What exact checks or user-visible evidence will prove completion?
+    validations:
+      required: true

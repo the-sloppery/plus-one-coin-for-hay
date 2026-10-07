@@ -6,10 +6,12 @@ permissions:
   contents: read
 jobs:
   verify:
-    runs-on: ubuntu-latest
+    runs-on: [self-hosted, ww-linux]
     steps:
       - uses: actions/checkout@v4
       - uses: CompeyDev/setup-rokit@v0.1.2
+        env:
+          HOME: ${{ runner.temp }}/sloppery-rokit-${{ github.run_id }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Formatting

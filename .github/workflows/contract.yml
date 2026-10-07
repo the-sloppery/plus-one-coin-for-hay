@@ -1,0 +1,29 @@
+name: Repository contract
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: [self-hosted, ww-linux]
+    steps:
+      - name: Check out exact source
+        uses: actions/checkout@v4
+      - name: Validate organization contract
+        env:
+          EXPECTED_REPOSITORY: ${{ github.repository }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          expected="${EXPECTED_REPOSITORY#*/}"
+          actual="$(jq -r '.repository' .github/repository-contract.json)"
+          [[ "$(jq -r '.organization' .github/repository-contract.json)" == "the-sloppery" ]] || { echo "wrong organization"; exit 1; }
+          [[ "$actual" == "$expected" ]] || { echo "repository contract does not match this repository"; exit 1; }
+          for required in .github/ISSUE_TEMPLATE/config.yml .github/ISSUE_TEMPLATE/bug.yml .github/ISSUE_TEMPLATE/feature.yml .github/ISSUE_TEMPLATE/task.yml .github/PULL_REQUEST_TEMPLATE.md docs/AGENT_CONTEXT.md; do
+            [[ -e "$required" || -L "$required" ]] || { echo "missing required contract file: $required"; exit 1; }
+          done
+          echo 'repository contract: OK'
