@@ -1,0 +1,115 @@
+name: Publish Roblox place
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "default.project.json"
+      - "src/**"
+      - "assets/**"
+      - "vendor/**"
+      - "wally.toml"
+      - "wally.lock"
+      - "rokit.toml"
+      - ".github/workflows/roblox-publish.yml"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: roblox-publish-${{ github.repository }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    if: github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    env:
+      ROBLOX_UNIVERSE_ID: ${{ vars.ROBLOX_UNIVERSE_ID }}
+      ROBLOX_PLACE_ID: ${{ vars.ROBLOX_PLACE_ID }}
+      ROBLOX_API_KEY: ${{ secrets.ROBLOX_API_KEY }}
+
+    steps:
+      - name: Check out source and pinned assets
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install pinned toolchain
+        uses: CompeyDev/setup-rokit@v0.1.2
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Validate publication configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          for name in ROBLOX_UNIVERSE_ID ROBLOX_PLACE_ID ROBLOX_API_KEY; do
+            if [[ -z "${!name:-}" ]]; then
+              echo "::error::Missing ${name}."
+              exit 1
+            fi
+          done
+          [[ "${ROBLOX_UNIVERSE_ID}" =~ ^[0-9]+$ ]] || { echo "::error::ROBLOX_UNIVERSE_ID must contain only digits."; exit 1; }
+          [[ "${ROBLOX_PLACE_ID}" =~ ^[0-9]+$ ]] || { echo "::error::ROBLOX_PLACE_ID must contain only digits."; exit 1; }
+
+      - name: Install Roblox packages
+        if: hashFiles('wally.toml') != ''
+        run: wally install
+
+      - name: Build production place
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p build
+          rojo build default.project.json -o "build/${GITHUB_REPOSITORY##*/}.rbxl"
+          test -s "build/${GITHUB_REPOSITORY##*/}.rbxl"
+
+      - name: Publish place version
+        id: publish
+        shell: bash
+        run: |
+          set -euo pipefail
+          place_file="build/${GITHUB_REPOSITORY##*/}.rbxl"
+          response_file="$(mktemp)"
+          http_code="$(curl --silent --show-error --output "${response_file}" --write-out "%{http_code}" \
+            --request POST \
+            --url "https://apis.roblox.com/universes/v1/${ROBLOX_UNIVERSE_ID}/places/${ROBLOX_PLACE_ID}/versions?versionType=Published" \
+            --header "x-api-key: ${ROBLOX_API_KEY}" \
+            --header "Content-Type: application/octet-stream" \
+            --data-binary "@${place_file}")"
+          if [[ "${http_code}" -lt 200 || "${http_code}" -ge 300 ]]; then
+            echo "::error::Roblox place publish failed with HTTP ${http_code}."
+            cat "${response_file}"
+            exit 1
+          fi
+          version_number="$(jq -r '.versionNumber // empty' "${response_file}")"
+          if [[ -z "${version_number}" ]]; then
+            echo "::error::Roblox accepted the request but returned no version number."
+            cat "${response_file}"
+            exit 1
+          fi
+          echo "version_number=${version_number}" >> "${GITHUB_OUTPUT}"
+          echo "Published Roblox place version ${version_number}."
+
+      - name: Write publication receipt
+        if: success()
+        shell: bash
+        run: |
+          {
+            echo "### Roblox publication"
+            echo ""
+            echo "- Universe ID: ${ROBLOX_UNIVERSE_ID}"
+            echo "- Place ID: ${ROBLOX_PLACE_ID}"
+            echo "- Version: ${{ steps.publish.outputs.version_number }}"
+          } >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Preserve published build
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: roblox-place-${{ github.sha }}
+          path: "build/${{ github.event.repository.name }}.rbxl"
+          if-no-files-found: error
