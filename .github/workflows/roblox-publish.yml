@@ -9,6 +9,7 @@ on:
       - "default.project.json"
       - "src/**"
       - "assets/**"
+      - "build/**"
       - "vendor/**"
       - "wally.toml"
       - "wally.lock"
@@ -34,27 +35,6 @@ jobs:
     steps:
       - name: Check out source
         uses: actions/checkout@v4
-
-      - name: Resolve and fetch pinned asset submodule
-        shell: bash
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          set -euo pipefail
-          # Some prototypes still carry a historical public URL that no
-          # longer exists. The same pinned commits are available in the
-          # organization-owned mirror.
-          if grep -q "goyim-bros-intl/lib-robots-assets.git" .gitmodules 2>/dev/null; then
-            git config -f .gitmodules submodule.vendor/lib-robots-assets.url https://github.com/the-sloppery/lib-robots-assets.git
-          fi
-          if [[ -z "${GITHUB_TOKEN:-}" ]]; then
-            echo "::error::GITHUB_TOKEN is unavailable for the asset mirror."
-            exit 1
-          fi
-          auth="$(printf 'x-access-token:%s' "${GITHUB_TOKEN}" | base64 -w0)"
-          git config --global http.https://github.com/.extraheader "AUTHORIZATION: basic ${auth}"
-          git submodule sync --recursive
-          git submodule update --init --depth 1 --recursive
 
       - name: Install pinned toolchain
         uses: CompeyDev/setup-rokit@v0.1.2
@@ -82,10 +62,12 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          mkdir -p build
-          rojo build default.project.json -o "build/${GITHUB_REPOSITORY##*/}.rbxl"
-          test -s "build/${GITHUB_REPOSITORY##*/}.rbxl"
-
+          place_file="build/${GITHUB_REPOSITORY##*/}.rbxl"
+          if [[ ! -s "${place_file}" ]]; then
+            echo "::error::Verified place artifact is missing: ${place_file}"
+            exit 1
+          fi
+          echo "Using verified place artifact ${place_file}."
       - name: Publish place version
         id: publish
         shell: bash
