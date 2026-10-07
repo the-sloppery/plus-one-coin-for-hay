@@ -37,6 +37,8 @@ jobs:
 
       - name: Resolve and fetch pinned asset submodule
         shell: bash
+        env:
+          SLOPPERY_GITHUB_TOKEN: ${{ secrets.SLOPPERY_GITHUB_TOKEN }}
         run: |
           set -euo pipefail
           # Some prototypes still carry a historical public URL that no
@@ -45,6 +47,12 @@ jobs:
           if grep -q "goyim-bros-intl/lib-robots-assets.git" .gitmodules 2>/dev/null; then
             git config -f .gitmodules submodule.vendor/lib-robots-assets.url https://github.com/the-sloppery/lib-robots-assets.git
           fi
+          if [[ -z "${SLOPPERY_GITHUB_TOKEN:-}" ]]; then
+            echo "::error::SLOPPERY_GITHUB_TOKEN is unavailable for the private asset mirror."
+            exit 1
+          fi
+          auth="$(printf 'x-access-token:%s' "${SLOPPERY_GITHUB_TOKEN}" | base64 -w0)"
+          git config --global http.https://github.com/.extraheader "AUTHORIZATION: basic ${auth}"
           git submodule sync --recursive
           git submodule update --init --depth 1 --recursive
 
