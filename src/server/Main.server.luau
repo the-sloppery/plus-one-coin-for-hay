@@ -40,6 +40,24 @@ local closing = false
 Lighting.ClockTime = 15
 Lighting.Brightness = 2.5
 Lighting.Ambient = Color3.fromRGB(155, 145, 113)
+Lighting.GlobalShadows = true
+Lighting.EnvironmentDiffuseScale = 0.85
+Lighting.EnvironmentSpecularScale = 0.3
+local hayAtmosphere = Lighting:FindFirstChild("HayAtmosphere") or Instance.new("Atmosphere")
+hayAtmosphere.Name = "HayAtmosphere"
+hayAtmosphere.Color = Color3.fromRGB(238, 225, 194)
+hayAtmosphere.Decay = Color3.fromRGB(146, 160, 122)
+hayAtmosphere.Density = 0.14
+hayAtmosphere.Haze = 0.35
+hayAtmosphere.Glare = 0.08
+hayAtmosphere.Parent = Lighting
+local hayColor = Lighting:FindFirstChild("HayColor") or Instance.new("ColorCorrectionEffect")
+hayColor.Name = "HayColor"
+hayColor.Brightness = 0.025
+hayColor.Contrast = 0.08
+hayColor.Saturation = 0.08
+hayColor.TintColor = Color3.fromRGB(255, 249, 230)
+hayColor.Parent = Lighting
 local function message(player: Player, text: string)
 	update:FireClient(player, { kind = "message", text = text })
 end
