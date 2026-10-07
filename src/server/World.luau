@@ -42,6 +42,11 @@ local function label(p: BasePart, text: string): TextLabel
 	l.TextSize = 22
 	l.TextColor3 = Color3.fromRGB(255, 244, 211)
 	l.TextStrokeTransparency = 0.3
+	local stroke = Instance.new("UIStroke")
+	stroke.Color = Color3.fromRGB(48, 54, 39)
+	stroke.Thickness = 1.5
+	stroke.Transparency = 0.25
+	stroke.Parent = l
 	l.Parent = gui
 	return l
 end
@@ -108,6 +113,13 @@ function World.lobby(join: (Player, number) -> ())
 		local p =
 			part(model, `Square {i}`, Vector3.new(16, 0.4, 14), Vector3.new(x, 0.4, z), colors[i])
 		p.Material = Enum.Material.Neon
+		local beacon = Instance.new("PointLight")
+		beacon.Name = "FieldBeacon"
+		beacon.Color = colors[i]
+		beacon.Brightness = 0.45
+		beacon.Range = 12
+		beacon.Shadows = false
+		beacon.Parent = p
 		pads[i] = p
 		labels[i] = label(p, `FIELD {i}\n0 / 6 • Walk in`)
 		prompt(p, "Join expedition", function(player)
